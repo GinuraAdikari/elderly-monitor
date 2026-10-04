@@ -1,0 +1,9 @@
+numpy>=1.26
+pandas>=2.1
+pyarrow>=14
+opencv-python>=4.9
+ultralytics>=8.3
+pyyaml>=6
+pydantic>=2.6
+anthropic>=0.40
+pytest>=8

@@ -1,0 +1,10 @@
+video,path,duration_s,fps,width,height,camera,split,has_bed,notes
+gmdcsa_01-2,data\raw\gmdcsa_01-2.mp4,6.4,29.84,1280,720,gmdcsa_room1,fall,True,Fall test clip: standing to sideways fall
+gmdcsa_01,data\raw\gmdcsa_01.mp4,11.4,29.84,1280,720,gmdcsa_room1,dev,True,Development video: bed-exit sequence (sitting -> standing -> walking)
+gmdcsa_02-2,data\raw\gmdcsa_02-2.mp4,8.4,29.83,1280,720,gmdcsa_room1,fall,True,Fall test clip: walking to sideways fall
+gmdcsa_02,data\raw\gmdcsa_02.mp4,11.8,29.85,1280,720,gmdcsa_room1,test,True,Held-out test: sitting on bed and drinking
+gmdcsa_03,data\raw\gmdcsa_03.mp4,11.9,29.82,1280,720,gmdcsa_room1,test,True,Held-out test: bed-return sequence (walking -> sitting -> sleeping in bed)
+gmdcsa_04-2,data\raw\gmdcsa_04-2.mp4,10.2,29.87,1280,720,gmdcsa_room1,fall,True,Fall test clip: standing to backward fall
+gmdcsa_04,data\raw\gmdcsa_04.mp4,7.8,29.84,1280,720,gmdcsa_room1,test,True,Held-out test: standing/moving in room
+hqfsd_fall_1,data\raw\hqfsd_fall_1.avi,269.9,30.0,800,480,hqfsd_cam3,fall,True,"HQFSD nursing home fall scenario (walker fall, 269.9s)"
+hqfsd_fall_2,data\raw\hqfsd_fall_2.avi,140.1,30.0,800,480,hqfsd_cam3,fall,True,"HQFSD nursing home fall scenario (fall near bed, 140.1s)"

@@ -1,0 +1,8 @@
+numpy
+pandas
+pyarrow
+opencv-python
+ultralytics
+pyyaml
+pydantic>=2
+anthropic

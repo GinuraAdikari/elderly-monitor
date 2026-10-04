@@ -1,0 +1,90 @@
+# All thresholds live here. Tune on the DEV video only (see README "Tuning protocol").
+video:
+  perception_fps: 5        # frames/sec sent to the pose model
+  state_hz: 1              # state decisions per second (1 bin = 1 s)
+  max_width: 960
+  clahe_below_luma: 70     # apply CLAHE when mean gray level is below this
+
+perception:
+  pose_model: yolo11s-pose.pt
+  tracker: bytetrack.yaml
+  det_conf: 0.25
+  kp_conf: 0.30            # keypoints below this are treated as missing
+
+patient:
+  bed_weight: 2.0          # patient track score = presence_sec + bed_weight * in_bed_sec
+  reacquire_sec: 3.0       # accept a nearby new track ID this soon after the patient track drops
+  reacquire_dist: 1.5      # ... within this many bbox-heights of the last position
+
+features:
+  lying_angle_deg: 55      # torso angle from vertical; 0 upright, 90 horizontal
+  lying_angle_slope: 8
+  lying_aspect: 1.0        # bbox w/h
+  lying_aspect_slope: 0.2
+  sit_hk_ratio: 0.6        # (knee_y - hip_y) / torso_len; below this => sitting
+  sit_hk_slope: 0.05
+  sit_aspect_mid: 0.6      # fallback when knees are not visible
+  sit_aspect_slope: 0.1
+  walk_speed_bl_s: 0.06    # body-lengths/sec at which "moving" reaches 0.5 (tuned on dev video)
+  walk_speed_slope: 0.015
+  edge_margin_bl: 0.25     # hips within this many body-lengths of the bed polygon count as "near bed"
+
+states:
+  min_present_frac: 0.4    # fraction of expected detections needed for a bin to count as observed
+  unknown_floor: 0.15
+  vis_good: 0.6            # core-joint confidence regarded as fully visible
+  occ_vis: 0.35            # below this and near bed => occluded-in-bed (blanket) hold
+  occ_hold: 0.5
+  out_of_view_sec: 5       # absent this long after being out of bed => OUT_OF_BED
+  stay_prob: 0.9
+  forbidden_prob: 0.0001
+  min_segment_sec: 2
+  transitions:             # allowed state changes; everything else is (almost) forbidden
+    LYING_IN_BED: [SITTING_ON_BED, UNKNOWN]
+    SITTING_ON_BED: [LYING_IN_BED, STANDING, WALKING, SITTING_OUTSIDE_BED, LYING_ON_FLOOR, UNKNOWN]
+    SITTING_OUTSIDE_BED: [STANDING, SITTING_ON_BED, LYING_ON_FLOOR, UNKNOWN]
+    STANDING: [WALKING, SITTING_ON_BED, SITTING_OUTSIDE_BED, OUT_OF_BED, LYING_ON_FLOOR, UNKNOWN]
+    WALKING: [STANDING, SITTING_ON_BED, SITTING_OUTSIDE_BED, OUT_OF_BED, LYING_ON_FLOOR, UNKNOWN]
+    OUT_OF_BED: [WALKING, STANDING, UNKNOWN]
+    LYING_ON_FLOOR: [SITTING_OUTSIDE_BED, STANDING, UNKNOWN]
+    UNKNOWN: [LYING_IN_BED, SITTING_ON_BED, SITTING_OUTSIDE_BED, STANDING, WALKING, OUT_OF_BED, LYING_ON_FLOOR]
+
+events:
+  confirm_min_sec: 2          # a confirming out-of-bed segment must last at least this long
+  standing_exit_sec: 8        # standing this long out of bed counts as an exit even without walking
+  exit_min_dist_bl: 1.0       # ... or hips this far (body-lengths) from the bed polygon
+  stand_attempt_max_sec: 30   # stood and returned within this => STAND_ATTEMPT, not an exit
+  return_confirm_sec: 5       # time back in bed required to confirm RETURN_TO_BED
+
+triage:
+  conf_tau: 0.55
+  low_conf_min_sec: 3
+  unknown_min_sec: 3
+  bedfloor_range: [0.25, 0.75]
+  occluded_min_sec: 15
+  caregiver_min_sec: 3
+  max_items: 12
+
+agent:
+  provider: anthropic         # anthropic | none  (none => NullAgent, keeps every label)
+  model: claude-sonnet-5-5    # any vision-capable model with tool use
+  max_tool_calls: 4
+  vlm_frames: 4
+  vlm_crop_scale: 2.2
+  draw_bed_polygon: true
+  context_pad_sec: 10
+  max_relabel_sec: 120
+
+# Alert thresholds are TEST-SCALE (videos are ~10-35 min). Real deployments would
+# use longer limits. They are design choices, not clinically validated values.
+alerts:
+  sit_monitor_sec: 120
+  standing_monitor_sec: 60
+  unknown_monitor_sec: 20
+  unknown_alert_sec: 60       # only after the person was last seen upright / out of bed
+  floor_alert_sec: 3
+  out_monitor_sec: 90
+  out_alert_sec: 180
+  exits_monitor_count: 3
+  exits_window_sec: 600
+  event_conf_monitor: 0.6
